@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Clippy Air Mail v7</title>
+  <style>
+    :root {
+      color-scheme: light;
+      background: #c8d8eb;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top, rgba(255,255,255,0.72), transparent 52%),
+        linear-gradient(180deg, #dce6f2 0%, #c2d2e7 100%);
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+    }
+
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      touch-action: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="game" width="420" height="760" aria-label="Clippy Air Mail"></canvas>
+  <script src="./src/core.js"></script>
+  <script src="./src/assets.js"></script>
+  <script src="./src/content/characters.js"></script>
+  <script src="./src/content/obstacles.js"></script>
+  <script src="./src/content/spawnTables.js"></script>
+  <script src="./src/i18n.js"></script>
+  <script src="./src/storage.js"></script>
+  <script src="./src/behaviors/playable.js"></script>
+  <script src="./src/behaviors/obstacle.js"></script>
+  <script src="./src/behaviors/powerup.js"></script>
+  <script src="./src/game.js"></script>
+  <script src="./src/main.js"></script>
+</body>
+</html>
