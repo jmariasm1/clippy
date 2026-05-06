@@ -1,19 +1,34 @@
 (() => {
 const ClippyGame = window.ClippyGame || (window.ClippyGame = {});
 
+const resolveAssetSrc = (src) => {
+  try {
+    return new URL(src, document.baseURI).href;
+  } catch (_) {
+    return src;
+  }
+};
+
 const imageAsset = (src) => {
   const img = new Image();
-  const asset = { img, ready: false, error: null };
+  const asset = { img, error: null, _ready: false };
+  Object.defineProperty(asset, "ready", {
+    enumerable: true,
+    get() {
+      return asset._ready || (img.complete && img.naturalWidth > 0);
+    },
+    set(value) {
+      asset._ready = Boolean(value);
+    },
+  });
+  img.decoding = "async";
   img.onload = () => {
     asset.ready = true;
   };
   img.onerror = () => {
-    asset.error = new Error(`Failed to load asset: ${src}`);
+    asset.error = new Error(`Failed to load asset: ${resolveAssetSrc(src)}`);
   };
-  img.src = src;
-  if (img.complete && img.naturalWidth > 0) {
-    asset.ready = true;
-  }
+  img.src = resolveAssetSrc(src);
   return asset;
 };
 
@@ -84,18 +99,42 @@ const preloadAssets = async (manifest = ASSET_MANIFEST, onProgress) => {
       }
 
       await new Promise((resolve) => {
-        asset.img.onload = () => {
+        let settled = false;
+        const cleanup = () => {
+          asset.img.removeEventListener("load", handleLoad);
+          asset.img.removeEventListener("error", handleError);
+        };
+        const handleLoad = () => {
+          if (settled) {
+            return;
+          }
+          settled = true;
           asset.ready = true;
           completed += 1;
           notify();
+          cleanup();
           resolve();
         };
-        asset.img.onerror = () => {
-          asset.error = new Error(`Failed to load asset: ${src}`);
+        const handleError = () => {
+          if (settled) {
+            return;
+          }
+          settled = true;
+          asset.error = new Error(`Failed to load asset: ${resolveAssetSrc(src)}`);
           completed += 1;
           notify();
+          cleanup();
           resolve();
         };
+        asset.img.addEventListener("load", handleLoad, { once: true });
+        asset.img.addEventListener("error", handleError, { once: true });
+        if (asset.ready) {
+          handleLoad();
+          return;
+        }
+        if (asset.error) {
+          handleError();
+        }
       });
     })
   );
